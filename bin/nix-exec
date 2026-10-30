@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Execute any command inside the declarative Nix environment from any shell.
+set -euo pipefail
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+if [[ -n "${NODE_PATH:-}" ]] && command -v scratchpad-cli >/dev/null 2>&1; then
+  exec "$@"
+else
+  exec nix develop "$REPO_ROOT" --command "$@"
+fi

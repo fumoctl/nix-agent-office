@@ -1,0 +1,49 @@
+{
+  "mcpServers": {
+    "rivalsearch": {
+      "url": "https://RivalSearchMCP.fastmcp.app/mcp"
+    },
+    "rivalsearch-local": {
+      "command": "nix",
+      "args": [
+        "run",
+        ".#rivalsearch-mcp"
+      ]
+    },
+    "scratchpad": {
+      "command": "nix",
+      "args": [
+        "run",
+        ".#scratchpad-mcp"
+      ]
+    },
+    "sequential-thinking": {
+      "command": "nix",
+      "args": [
+        "run",
+        ".#sequential-thinking-mcp"
+      ]
+    },
+    "memory": {
+      "command": "nix",
+      "args": [
+        "run",
+        ".#memory-mcp"
+      ]
+    },
+    "markitdown": {
+      "command": "nix",
+      "args": [
+        "run",
+        ".#markitdown-mcp"
+      ]
+    },
+    "fetch": {
+      "command": "nix",
+      "args": [
+        "run",
+        ".#fetch-mcp"
+      ]
+    }
+  }
+}

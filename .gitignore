@@ -1,0 +1,7 @@
+result
+result-*
+.direnv/
+.scratchpad/
+__pycache__/
+*.pyc
+examples/output/
