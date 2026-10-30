@@ -21,6 +21,7 @@
           pkgs = import nixpkgs { inherit system; };
           lib = pkgs.lib;
           py = pkgs.python3Packages;
+          extraPkgs = import ./nix/extra-packages.nix { inherit pkgs; };
 
           # 1. Upstream Official Anthropic Skills (pinned commit & SHA-256)
           anthropicSkillsSrc = pkgs.fetchFromGitHub {
@@ -152,7 +153,7 @@
             ps.markdown
             ps.markdownify
             ps.psutil
-          ]);
+          ] ++ (extraPkgs.pythonPackages ps));
 
           # 5. Declarative Node.js Modules (docx, pptxgenjs, pdf-lib, pdfjs-dist, react, react-dom, react-icons, sharp)
           rawNodeModules = pkgs.importNpmLock.buildNodeModules {
@@ -243,10 +244,10 @@
             mcp-server-fetch
             markitdown-mcp
             mcp-nixos
-          ]);
+          ]) ++ extraPkgs.systemPackages;
 
           # Polyglot toolchains for building & testing cloned open-source projects in work/repos/
-          ossPolyglotTools = with pkgs; [
+          ossPolyglotTools = (with pkgs; [
             git
             curl
             jq
@@ -273,7 +274,7 @@
             zlib.dev
             sqlite
             sqlite.dev
-          ];
+          ]) ++ extraPkgs.ossPackages;
 
           # Linux FHS Sandbox for OSS projects whose test suites download prebuilt binaries/wheels
           ossFhsEnv =
@@ -571,7 +572,7 @@
               zlib.dev
               sqlite
               sqlite.dev
-            ];
+            ] ++ (import ./nix/extra-packages.nix { inherit pkgs; }).ossPackages;
             shellHook = ''
               export AGENT_WORK_DIR="''${AGENT_WORK_DIR:-$PWD/work}"
               mkdir -p "$AGENT_WORK_DIR/repos" "$AGENT_WORK_DIR/.cache"

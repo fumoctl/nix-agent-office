@@ -1,7 +1,60 @@
 #!/usr/bin/env bash
 # Execute any command inside the declarative Nix environment from any shell.
+# Also supports ephemeral on-the-fly packages without editing flake files:
+#   ./bin/nix-exec [--pkgs "graphviz imagemagick"] [--py "matplotlib scipy"] -- <command...>
 set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+EXTRA_PKGS=""
+EXTRA_PY=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --pkgs|-p)
+      EXTRA_PKGS="$2"
+      shift 2
+      ;;
+    --py)
+      EXTRA_PY="$2"
+      shift 2
+      ;;
+    --)
+      shift
+      break
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+if [[ -n "$EXTRA_PKGS" || -n "$EXTRA_PY" ]]; then
+  SYSTEM="$(nix eval --impure --raw --expr 'builtins.currentSystem')"
+  EXPR="
+    let
+      flake = builtins.getFlake (toString $REPO_ROOT);
+      pkgs = flake.inputs.nixpkgs.legacyPackages.$SYSTEM;
+      baseEnv = flake.packages.$SYSTEM.default;
+      pyEnv = flake.packages.$SYSTEM.pythonEnv.override (old: {
+        extraLibs = (old.extraLibs or []) ++ (with pkgs.python3Packages; [ $EXTRA_PY ]);
+      });
+    in pkgs.buildEnv {
+      name = \"ephemeral-agent-env\";
+      pathsToLink = [ \"/bin\" ];
+      ignoreCollisions = true;
+      paths = [ pyEnv baseEnv ] ++ (with pkgs; [ $EXTRA_PKGS ]);
+    }
+  "
+  EPH_OUT="$(nix build --impure --no-link --print-out-paths --expr "$EXPR")"
+  NODE_MODS="$(nix build --no-link --print-out-paths "$REPO_ROOT#nodeModules")"
+  export PATH="$EPH_OUT/bin:$PATH"
+  export NODE_PATH="$NODE_MODS/node_modules${NODE_PATH:+:$NODE_PATH}"
+  export SAL_USE_VCLPLUGIN="svp"
+  export AGENT_WORK_DIR="${AGENT_WORK_DIR:-$REPO_ROOT/work}"
+  export SCRATCHPAD_DIR="${SCRATCHPAD_DIR:-$AGENT_WORK_DIR/.scratchpad}"
+  mkdir -p "$AGENT_WORK_DIR" "$SCRATCHPAD_DIR"
+  exec "$@"
+fi
 
 if [[ -n "${NODE_PATH:-}" ]] && command -v scratchpad-cli >/dev/null 2>&1; then
   exec "$@"

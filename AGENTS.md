@@ -13,6 +13,18 @@ This repository provides a **100% declarative Nix environment** for AI agents (A
   ./bin/nix-exec python3 script.py
   ./bin/nix-exec node generate_deck.js
   ```
+- **Adding Packages On the Fly (100% Declarative)**:
+  - **Ephemeral (per-command)**: Pass `--pkgs` (for Nixpkgs binaries) or `--py` (for `python3Packages`) to `./bin/nix-exec`:
+    ```bash
+    ./bin/nix-exec --pkgs "graphviz imagemagick" --py "matplotlib scipy" -- python3 work/plot.py
+    ```
+  - **Persistent (repo-wide)**: Use `./bin/nix-add-pkg` (which validates the package in `nixpkgs` and records it in [`nix/extra-packages.nix`](./nix/extra-packages.nix) or [`nix/node/package.json`](./nix/node/package.json)):
+    ```bash
+    ./bin/nix-add-pkg --system graphviz
+    ./bin/nix-add-pkg --python matplotlib
+    ./bin/nix-add-pkg --oss protobuf
+    ./bin/nix-add-pkg --node chart.js
+    ```
 - Inside `nix develop` (or via `./bin/nix-exec`), `NODE_PATH` is pre-populated with:
   - `docx` (Word `.docx` generation)
   - `pptxgenjs` (PowerPoint `.pptx` generation)

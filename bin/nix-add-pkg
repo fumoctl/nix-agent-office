@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+# Declaratively add a Nixpkgs system package, Python package, OSS build package, or Node npm package
+# to this repository on the fly, verifying that the derivation evaluates cleanly first.
+#
+# Usage:
+#   ./bin/nix-add-pkg --system <pkg> [pkg2...]
+#   ./bin/nix-add-pkg --python <pypkg> [pypkg2...]
+#   ./bin/nix-add-pkg --oss <pkg> [pkg2...]
+#   ./bin/nix-add-pkg --node <npm-pkg> [npm-pkg2...]
+
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+EXTRA_FILE="$REPO_ROOT/nix/extra-packages.nix"
+SYSTEM="$(nix eval --impure --raw --expr 'builtins.currentSystem')"
+
+MODE=""
+PKGS=()
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --system|-s)
+      MODE="system"
+      shift
+      ;;
+    --python|-p)
+      MODE="python"
+      shift
+      ;;
+    --oss|-o)
+      MODE="oss"
+      shift
+      ;;
+    --node|-n)
+      MODE="node"
+      shift
+      ;;
+    *)
+      PKGS+=("$1")
+      shift
+      ;;
+  esac
+done
+
+if [[ -z "$MODE" || "${#PKGS[@]}" -eq 0 ]]; then
+  echo "Usage: ./bin/nix-add-pkg [--system | --python | --oss | --node] <pkg1> [pkg2...]" >&2
+  exit 1
+fi
+
+if [[ "$MODE" == "node" ]]; then
+  echo "Adding Node.js package(s) to nix/node/package.json & package-lock.json: ${PKGS[*]}"
+  (
+    cd "$REPO_ROOT/nix/node"
+    nix shell --inputs-from "$REPO_ROOT" nixpkgs#nodejs --command npm install --save --package-lock-only --ignore-scripts "${PKGS[@]}"
+  )
+  echo "Successfully updated nix/node/package.json and nix/node/package-lock.json."
+  exit 0
+fi
+
+for pkg in "${PKGS[@]}"; do
+  if [[ "$MODE" == "python" ]]; then
+    echo "Verifying python3Packages.$pkg in pinned nixpkgs..."
+    nix eval "$REPO_ROOT#packages.$SYSTEM.pythonEnv" --apply " _: let pkgs = (builtins.getFlake (toString $REPO_ROOT)).inputs.nixpkgs.legacyPackages.$SYSTEM; in pkgs.python3Packages.$pkg.drvPath" >/dev/null
+    MARKER="# <PYTHON_PACKAGES>"
+  elif [[ "$MODE" == "oss" ]]; then
+    echo "Verifying pkgs.$pkg in pinned nixpkgs..."
+    nix eval --expr "let pkgs = (builtins.getFlake (toString $REPO_ROOT)).inputs.nixpkgs.legacyPackages.$SYSTEM; in pkgs.$pkg.drvPath" --impure >/dev/null
+    MARKER="# <OSS_PACKAGES>"
+  else
+    echo "Verifying pkgs.$pkg in pinned nixpkgs..."
+    nix eval --expr "let pkgs = (builtins.getFlake (toString $REPO_ROOT)).inputs.nixpkgs.legacyPackages.$SYSTEM; in pkgs.$pkg.drvPath" --impure >/dev/null
+    MARKER="# <SYSTEM_PACKAGES>"
+  fi
+
+  if grep -qE "^[[:space:]]*${pkg}[[:space:]]*$" "$EXTRA_FILE"; then
+    echo "  -> '$pkg' is already present in nix/extra-packages.nix"
+  else
+    sed -i "s|    ${MARKER}|    ${pkg}\n    ${MARKER}|" "$EXTRA_FILE"
+    echo "  -> Added '$pkg' under ${MODE} packages in nix/extra-packages.nix"
+  fi
+done
