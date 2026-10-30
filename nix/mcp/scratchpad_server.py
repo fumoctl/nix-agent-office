@@ -31,7 +31,8 @@ mcp = FastMCP(
 
 
 def _scratchpad_root() -> Path:
-    root = os.environ.get("SCRATCHPAD_DIR", os.path.join(os.getcwd(), ".scratchpad"))
+    default_dir = os.path.join(os.getcwd(), "work", ".scratchpad")
+    root = os.environ.get("SCRATCHPAD_DIR", default_dir)
     path = Path(root).resolve()
     path.mkdir(parents=True, exist_ok=True)
     return path

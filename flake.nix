@@ -237,12 +237,73 @@
             pkgs.coreutils
             pkgs.gcc
           ] ++ (with pkgs; [
-            # Nixpkgs MCP Servers for Agent Reasoning, Memory & Document Conversion
+            # Nixpkgs MCP Servers for Agent Reasoning, Memory, Nixpkgs Discovery & Document Conversion
             mcp-server-sequential-thinking
             mcp-server-memory
             mcp-server-fetch
             markitdown-mcp
+            mcp-nixos
           ]);
+
+          # Polyglot toolchains for building & testing cloned open-source projects in work/repos/
+          ossPolyglotTools = with pkgs; [
+            git
+            curl
+            jq
+            ripgrep
+            fd
+            gnumake
+            cmake
+            ninja
+            pkg-config
+            gcc
+            clang
+            rustc
+            cargo
+            go
+            nodejs
+            pnpm
+            yarn
+            uv
+            ruff
+            (python3.withPackages (ps: [ ps.pytest ps.pytest-asyncio ps.pip ps.virtualenv ]))
+            openssl
+            openssl.dev
+            zlib
+            zlib.dev
+            sqlite
+            sqlite.dev
+          ];
+
+          # Linux FHS Sandbox for OSS projects whose test suites download prebuilt binaries/wheels
+          ossFhsEnv =
+            if pkgs.stdenv.isLinux then
+              pkgs.buildFHSEnv {
+                name = "oss-fhs";
+                targetPkgs = p: ossPolyglotTools ++ (with p; [
+                  stdenv.cc.cc.lib
+                  glib
+                  libxml2
+                  libxslt
+                  libffi
+                  ncurses
+                  readline
+                  bzip2
+                  xz
+                  icu
+                  curl
+                  which
+                  file
+                  unzip
+                  zip
+                ]);
+                runScript = "bash";
+              }
+            else
+              pkgs.writeShellScriptBin "oss-fhs" ''
+                export PATH="${lib.makeBinPath ossPolyglotTools}:$PATH"
+                exec ${pkgs.bashInteractive}/bin/bash "$@"
+              '';
 
           # End-to-End Verification Script
           verifyEnvBin = pkgs.writeShellScriptBin "verify-env" ''
@@ -387,6 +448,8 @@
           memory-mcp = pkgs.mcp-server-memory;
           markitdown-mcp = pkgs.markitdown-mcp;
           fetch-mcp = pkgs.mcp-server-fetch;
+          nixos-mcp = pkgs.mcp-nixos;
+          oss-fhs = ossFhsEnv;
         }
       );
 
@@ -439,6 +502,14 @@
             type = "app";
             program = "${pkgs.fetch-mcp}/bin/mcp-server-fetch";
           };
+          nixos-mcp = {
+            type = "app";
+            program = "${pkgs.nixos-mcp}/bin/mcp-nixos";
+          };
+          oss-fhs = {
+            type = "app";
+            program = "${pkgs.oss-fhs}/bin/oss-fhs";
+          };
         }
       );
 
@@ -465,8 +536,45 @@
               export NODE_PATH="${selfPkgs.nodeModules}/node_modules''${NODE_PATH:+:$NODE_PATH}"
               export FONTCONFIG_FILE="${fontsConf}"
               export SAL_USE_VCLPLUGIN="svp"
-              export SCRATCHPAD_DIR="''${SCRATCHPAD_DIR:-$PWD/.scratchpad}"
-              mkdir -p "$SCRATCHPAD_DIR"
+              export AGENT_WORK_DIR="''${AGENT_WORK_DIR:-$PWD/work}"
+              export SCRATCHPAD_DIR="''${SCRATCHPAD_DIR:-$AGENT_WORK_DIR/.scratchpad}"
+              mkdir -p "$AGENT_WORK_DIR" "$SCRATCHPAD_DIR"
+            '';
+          };
+
+          oss-polyglot = pkgs.mkShell {
+            name = "oss-polyglot-build-test-shell";
+            packages = with pkgs; [
+              git
+              curl
+              jq
+              ripgrep
+              fd
+              gnumake
+              cmake
+              ninja
+              pkg-config
+              gcc
+              clang
+              rustc
+              cargo
+              go
+              nodejs
+              pnpm
+              yarn
+              uv
+              ruff
+              (python3.withPackages (ps: [ ps.pytest ps.pytest-asyncio ps.pip ps.virtualenv ]))
+              openssl
+              openssl.dev
+              zlib
+              zlib.dev
+              sqlite
+              sqlite.dev
+            ];
+            shellHook = ''
+              export AGENT_WORK_DIR="''${AGENT_WORK_DIR:-$PWD/work}"
+              mkdir -p "$AGENT_WORK_DIR/repos" "$AGENT_WORK_DIR/.cache"
             '';
           };
         }

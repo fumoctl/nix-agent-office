@@ -26,7 +26,7 @@ import scratchpad_server as sp  # noqa: E402
 
 
 def main() -> None:
-    out_dir = REPO_ROOT / "examples" / "output"
+    out_dir = REPO_ROOT / "work" / "example-deliverables"
     out_dir.mkdir(parents=True, exist_ok=True)
 
     print("1. Initializing Research Scratchpad session...")
@@ -237,7 +237,7 @@ def main() -> None:
     story.append(tbl)
     doc.build(story)
     print(f"   -> Generated .pdf: {pdf_path}")
-    print("\nAll 4 Office/PDF deliverables + Markdown dossier generated and verified in examples/output/!")
+    print("\nAll 4 Office/PDF deliverables + Markdown dossier generated and verified in work/example-deliverables/!")
 
 
 if __name__ == "__main__":

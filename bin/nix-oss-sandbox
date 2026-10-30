@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+# Build, test, and benchmark cloned open-source projects inside an isolated Nix environment
+# with all caches (Cargo, Go, npm, uv, pip) confined to work/.cache/ (never polluting $HOME).
+#
+# Usage:
+#   ./bin/nix-oss-sandbox [--dir work/repos/my-app] [--pkgs "rustc cargo openssl.dev"] [--fhs] -- <command...>
+#
+# Examples:
+#   ./bin/nix-oss-sandbox --dir work/repos/ripgrep --pkgs "rustc cargo pkg-config" -- cargo test
+#   ./bin/nix-oss-sandbox --dir work/repos/fastapi --pkgs "python3 uv" -- uv run pytest
+#   ./bin/nix-oss-sandbox --dir work/repos/some-binary-repo --fhs -- make check
+
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+WORK_DIR="${AGENT_WORK_DIR:-$REPO_ROOT/work}"
+TARGET_DIR="$WORK_DIR"
+EXTRA_PKGS=""
+USE_FHS=0
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --dir|-C)
+      TARGET_DIR="$2"
+      shift 2
+      ;;
+    --pkgs|-p)
+      EXTRA_PKGS="$2"
+      shift 2
+      ;;
+    --fhs)
+      USE_FHS=1
+      shift
+      ;;
+    --)
+      shift
+      break
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+if [[ $# -eq 0 ]]; then
+  echo "Usage: ./bin/nix-oss-sandbox [--dir <path>] [--pkgs \"pkg1 pkg2\"] [--fhs] -- <command...>" >&2
+  exit 1
+fi
+
+mkdir -p "$TARGET_DIR"
+TARGET_DIR="$(cd "$TARGET_DIR" && pwd)"
+
+# Isolate all language/build caches inside work/.cache so $HOME stays 100% clean
+CACHE_ROOT="$WORK_DIR/.cache"
+mkdir -p \
+  "$CACHE_ROOT/cargo" \
+  "$CACHE_ROOT/go" \
+  "$CACHE_ROOT/npm" \
+  "$CACHE_ROOT/uv" \
+  "$CACHE_ROOT/pip" \
+  "$CACHE_ROOT/xdg" \
+  "$CACHE_ROOT/tmp"
+
+export CARGO_HOME="$CACHE_ROOT/cargo"
+export GOPATH="$CACHE_ROOT/go"
+export GOCACHE="$CACHE_ROOT/go/build"
+export NPM_CONFIG_CACHE="$CACHE_ROOT/npm"
+export UV_CACHE_DIR="$CACHE_ROOT/uv"
+export PIP_CACHE_DIR="$CACHE_ROOT/pip"
+export XDG_CACHE_HOME="$CACHE_ROOT/xdg"
+
+# 1. If --fhs is requested, run inside the flake's FHS environment (oss-fhs)
+if [[ "$USE_FHS" -eq 1 ]]; then
+  exec nix run "$REPO_ROOT#oss-fhs" -- -c "cd $(printf '%q' "$TARGET_DIR") && $(printf '%q ' "$@")"
+fi
+
+# 2. If extra nixpkgs packages were requested, spin up an ephemeral shell locked to our flake's nixpkgs
+if [[ -n "$EXTRA_PKGS" ]]; then
+  SHELL_PKGS=()
+  for pkg in $EXTRA_PKGS; do
+    SHELL_PKGS+=("nixpkgs#$pkg")
+  done
+  exec nix shell --inputs-from "$REPO_ROOT" "${SHELL_PKGS[@]}" --command bash -c "cd $(printf '%q' "$TARGET_DIR") && exec $(printf '%q ' "$@")"
+fi
+
+# 3. If the target OSS repo has its own flake.nix, use its devShell automatically
+if [[ -f "$TARGET_DIR/flake.nix" ]]; then
+  exec nix develop "$TARGET_DIR" --command bash -c "cd $(printf '%q' "$TARGET_DIR") && exec $(printf '%q ' "$@")"
+fi
+
+# 4. Otherwise, run inside our flake's polyglot OSS build/test devShell
+exec nix develop "$REPO_ROOT#oss-polyglot" --command bash -c "cd $(printf '%q' "$TARGET_DIR") && exec $(printf '%q ' "$@")"

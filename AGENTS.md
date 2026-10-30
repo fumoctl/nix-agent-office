@@ -4,8 +4,9 @@ This repository provides a **100% declarative Nix environment** for AI agents (A
 
 ---
 
-## 1. Nix Execution Rules (CRITICAL)
+## 1. Nix Execution & Workspace Directory Rules (CRITICAL)
 
+- **Use `work/` for all agent activity**: Place all generated deliverables (`.docx`, `.pptx`, `.xlsx`, `.pdf`), temporary generator scripts (`.py`, `.js`), unpacked OOXML folders, visual QA page renders (`*.jpg`, `*.png`), and research scratchpads (`work/.scratchpad/`) inside the [`work/`](./work) directory (or a task-specific subdirectory like `work/<task-name>/`). Everything inside `work/` (except `work/.gitkeep`) is gitignored so the Nix Flake Git tree stays clean.
 - **Never run `pip install`, `npm install`, `uv run`, or `apt-get`**. Every Python library, Node.js library, system binary, font, and MCP server is declaratively built and pinned in [`flake.nix`](./flake.nix).
 - If your shell is not already inside `nix develop` (check if `command -v scratchpad-cli` or `$NODE_PATH` is set), prefix shell commands with `./bin/nix-exec <command>` or `nix develop -c <command>`:
   ```bash
@@ -29,6 +30,7 @@ Always read the corresponding `SKILL.md` before starting a research or document 
 | Skill | Path | Purpose |
 | :--- | :--- | :--- |
 | **`deep-research-deliverables`** | [`.agents/skills/deep-research-deliverables/SKILL.md`](./.agents/skills/deep-research-deliverables/SKILL.md) | End-to-end orchestration from RivalSearchMCP → Scratchpad → Office deliverables |
+| **`oss-build-test`** | [`.agents/skills/oss-build-test/SKILL.md`](./.agents/skills/oss-build-test/SKILL.md) | Clone, build, test & benchmark OSS repos in `work/repos/` via `./bin/nix-oss-sandbox` |
 | **`research-scratchpad`** | [`.agents/skills/research-scratchpad/SKILL.md`](./.agents/skills/research-scratchpad/SKILL.md) | Structured evidence ledger, table staging, and claim verification in `.scratchpad/` |
 | **`rival-search-mcp`** | [`.agents/skills/rival-search-mcp/SKILL.md`](./.agents/skills/rival-search-mcp/SKILL.md) | 9 keyless research tools across web, academic, social, news, GitHub, and PDFs |
 | **`docx`** | [`.agents/skills/docx/SKILL.md`](./.agents/skills/docx/SKILL.md) | Official Anthropic Word (`.docx` / `.dotx`) creation, redlining, comments & QA |
@@ -50,6 +52,7 @@ Configured in [`.agents/plugins/research-office-suite/mcp_config.json`](./.agent
 - **`memory`**: Nixpkgs `mcp-server-memory` for persistent knowledge graph tracking.
 - **`markitdown`**: Nixpkgs `markitdown-mcp` for converting arbitrary office/PDF files to Markdown.
 - **`fetch`**: Nixpkgs `mcp-server-fetch` for direct URL fetching.
+- **`nixos`**: Nixpkgs `mcp-nixos` for searching 130,000+ Nixpkgs packages & options when building/testing external OSS repositories.
 
 ---
 

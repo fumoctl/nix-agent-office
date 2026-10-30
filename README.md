@@ -47,6 +47,10 @@ Or execute any single command inside the declarative environment from outside `n
 | `nix run .#sequential-thinking-mcp` | Start `mcp-server-sequential-thinking` |
 | `nix run .#memory-mcp` | Start `mcp-server-memory` |
 | `nix run .#markitdown-mcp` | Start `markitdown-mcp` |
+| `nix run .#nixos-mcp` | Start `mcp-nixos` to search 130,000+ Nixpkgs packages for OSS builds |
+| `nix run .#oss-fhs` | Enter a Linux FHS sandbox (`buildFHSEnv`) for building/testing external OSS repos |
+| `nix develop .#oss-polyglot` | Enter the polyglot OSS build/test shell (Rust, Go, Python, Node/pnpm/yarn, C/C++) |
+| `./bin/nix-oss-sandbox --help` | Run OSS repo builds & test suites in `work/repos/` with caches isolated in `work/.cache/` |
 
 ---
 
@@ -67,7 +71,8 @@ Or execute any single command inside the declarative environment from outside `n
 │       ├── package.json                           # Declarative Node dependencies (docx, pptxgenjs, pdf-lib, sharp, react-icons)
 │       └── package-lock.json                      # Pinned npm lockfile built via pkgs.importNpmLock
 ├── examples/
-│   └── generate_all_deliverables.py               # End-to-end demo generating verified .docx, .pptx, .xlsx, .pdf
+│   └── generate_all_deliverables.py               # End-to-end demo generating verified .docx, .pptx, .xlsx, .pdf in work/
+├── work/                                          # Gitignored agent working directory for deliverables, scripts, QA & .scratchpad/
 └── .agents/
     ├── skills.json                                # Antigravity skill registry
     ├── plugins.json                               # Antigravity plugin registry
