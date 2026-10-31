@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="utf-8"><title>Ejemplo · Documentación técnica</title></head>
+<body>
+
+<section class="cover">
+  <div class="brand"><div class="logo"></div>ACME · Platform</div>
+  <div class="bar"></div>
+  <h1>Acme</h1>
+  <div class="subtitle">Documentación técnica de la plataforma: funcionalidades, funcionamiento, pantallas y modelo de datos</div>
+  <div class="meta">
+    <b>Fecha:</b> 30 de octubre de 2026<br>
+    <b>Frontend:</b> Android · Kotlin + Jetpack Compose (Material 3)<br>
+    <b>Backend:</b> Rust · Axum 0.8 + SQLx · PostgreSQL<br>
+    <b>Repositorios:</b> acme/app (b307723) · acme/server (c47680c)<br><br>
+    Este documento de ejemplo muestra cada bloque que el generador sabe maquetar. Sustituye el contenido por el tuyo y conserva las clases.
+  </div>
+</section>
+
+<div class="toc-page"><h2>Índice</h2></div>
+
+<section class="chapter">
+  <h1 id="s1"><span class="num">1.</span>Resumen ejecutivo</h1>
+  <p>Un párrafo de cuerpo con <strong>negrita</strong>, <em>cursiva</em>, <code>código en línea</code> y un <span style="color:#36519E">color de acento</span>. El texto se lee del HTML: el generador no contiene prosa.</p>
+
+  <div class="kpis">
+    <div class="kpi"><b>21</b><span>endpoints REST<br>(4 públicos · 17 con JWT)</span></div>
+    <div class="kpi"><b>5</b><span>tablas en<br>PostgreSQL</span></div>
+    <div class="kpi"><b>3</b><span>pantallas +<br>5 diálogos</span></div>
+  </div>
+
+  <div class="note"><p><strong>Estado del proyecto.</strong> Primera versión funcional; faltan tests automatizados, CI y refresh tokens.</p></div>
+
+  <h2>1.1 Qué cubre este documento</h2>
+  <ol>
+    <li>Las funcionalidades, agrupadas por pantalla.</li>
+    <li>El modelo de datos y las migraciones.</li>
+    <li>Los riesgos técnicos y el trabajo pendiente.</li>
+  </ol>
+
+  <figure class="diagram">
+    <img alt="Diagrama de componentes" src="example-diagram.png" style="width: 12cm;">
+    <figcaption data-label="Figura 1">Diagrama de componentes: app ↔ API REST ↔ PostgreSQL</figcaption>
+  </figure>
+</section>
+
+<section class="chapter-flow">
+  <h1 id="s2"><span class="num">2.</span>Pantallas y modelo de datos</h1>
+  <p>Cada pantalla se documenta con su captura a la izquierda y la explicación a la derecha.</p>
+
+  <div class="screen">
+    <figure>
+      <img alt="Pantalla de acceso" src="example-screen.png">
+      <figcaption data-label="Figura 2">Pantalla de acceso (login)</figcaption>
+    </figure>
+    <div class="desc">
+      <div class="tagline">AuthScreen · modo «Acceso»</div>
+      <h3>Login</h3>
+      <p>Primera pantalla cuando no hay sesión guardada. Sobre el fondo azul marino aparecen el logo y la marca.</p>
+      <ul>
+        <li><strong>Selector Acceso / Registro</strong> arriba a la derecha.</li>
+        <li>Campos Email, Username y Password.</li>
+        <li>Botón lima «Entrar», que llama a <code>POST /api/auth/login</code>.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>2.1 Tabla de endpoints</h2>
+  <table>
+    <caption data-label="Tabla 1">Endpoints públicos del backend</caption>
+    <thead><tr><th>Método</th><th>Ruta</th><th class="r">Código</th><th>Descripción</th></tr></thead>
+    <tbody>
+      <tr><td><code>POST</code></td><td><code>/api/auth/login</code></td><td class="r">200</td><td>Devuelve el JWT y el perfil del usuario</td></tr>
+      <tr><td><code>POST</code></td><td><code>/api/auth/register</code></td><td class="r">201</td><td>Crea la cuenta y devuelve el token</td></tr>
+      <tr><td><code>GET</code></td><td><code>/api/health</code></td><td class="r">200</td><td>Comprueba el pool de conexiones</td></tr>
+    </tbody>
+  </table>
+
+  <h2>2.2 Petición de ejemplo</h2>
+  <pre>POST /api/auth/login
+Content-Type: application/json
+
+{"email": "user@example.com", "password": "••••••"}</pre>
+
+  <div class="warn"><p>El token se guarda sin cifrar en <code>SharedPreferences</code>; no hay refresh tokens.</p></div>
+</section>
+
+</body>
+</html>

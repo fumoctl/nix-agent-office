@@ -45,7 +45,9 @@ Always read the corresponding `SKILL.md` before starting a research or document 
 | **`oss-build-test`** | [`.agents/skills/oss-build-test/SKILL.md`](./.agents/skills/oss-build-test/SKILL.md) | Clone, build, test & benchmark OSS repos in `work/repos/` via `./bin/nix-oss-sandbox` |
 | **`research-scratchpad`** | [`.agents/skills/research-scratchpad/SKILL.md`](./.agents/skills/research-scratchpad/SKILL.md) | Structured evidence ledger, table staging, and claim verification in `.scratchpad/` |
 | **`rival-search-mcp`** | [`.agents/skills/rival-search-mcp/SKILL.md`](./.agents/skills/rival-search-mcp/SKILL.md) | 9 keyless research tools across web, academic, social, news, GitHub, and PDFs |
-| **`docx`** | [`.agents/skills/docx/SKILL.md`](./.agents/skills/docx/SKILL.md) | Official Anthropic Word (`.docx` / `.dotx`) creation, redlining, comments & QA |
+| **`docx`** | [`.agents/skills/docx/SKILL.md`](./.agents/skills/docx/SKILL.md) | Official Anthropic Word (`.docx` / `.dotx`) creation (`docx-js`), redlining, comments & QA |
+| **`building-technical-docx-reports`** | [`.agents/skills/building-technical-docx-reports/SKILL.md`](./.agents/skills/building-technical-docx-reports/SKILL.md) | Structured HTML → Styled Technical `.docx` report pipeline (cover band, KPI strips, Mermaid diagrams, real TOC page numbers via `fill_toc.py`, geometry/layout QA via `verify_docx.py` & `check_layout.py`) |
+| **`docx-expert`** | [`.agents/skills/docx-expert/SKILL.md`](./.agents/skills/docx-expert/SKILL.md) | Python-based `.docx` creation (`python-docx`), Jinja2 template rendering (`docxtpl`), invoice/resume/report generators, and `unpack.py`/`pack.py` XML workflows |
 | **`pptx`** | [`.agents/skills/pptx/SKILL.md`](./.agents/skills/pptx/SKILL.md) | Official Anthropic PowerPoint (`.pptx` / `.potx`) creation, templates, design & QA |
 | **`xlsx`** | [`.agents/skills/xlsx/SKILL.md`](./.agents/skills/xlsx/SKILL.md) | Official Anthropic Excel (`.xlsx` / `.xlsm`) financial modeling & LibreOffice `recalc.py` |
 | **`pdf`** | [`.agents/skills/pdf/SKILL.md`](./.agents/skills/pdf/SKILL.md) | Official Anthropic PDF creation, table extraction, OCR, form filling & inspection |

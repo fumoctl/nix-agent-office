@@ -1,0 +1,79 @@
+{
+  "html": "source.html",
+  "base_dir": ".",
+  "out": "report.docx",
+  "header_label": "Acme — Documentación técnica",
+  "title": "Acme — Documentación Técnica",
+  "language": "es-ES",
+  "body_pt": 10.5,
+  "page": {
+    "width_cm": 21.0,
+    "height_cm": 29.7,
+    "margin_cm": 2.2,
+    "top_cm": 2.3,
+    "bottom_cm": 2.0
+  },
+  "palette": {
+    "navy": "122440",
+    "accent": "36519E",
+    "slate": "5B6B82",
+    "highlight": "C3DC3A",
+    "body": "1F2937",
+    "alt": "F2F4F8",
+    "grid": "C9D1DE",
+    "code_bg": "F3F6FB"
+  },
+  "fonts": {
+    "sans": "Calibri",
+    "mono": "Consolas"
+  },
+  "table": {
+    "cell_margin_top": 30,
+    "cell_margin_bottom": 30,
+    "cell_margin_left": 90,
+    "cell_margin_right": 90
+  },
+  "screen_width_cm": 7.2,
+  "figure_widths": {
+    "assets/arch.png": 13.0,
+    "assets/er.png": 15.0
+  },
+  "cover": {
+    "band_height_cm": 14.5,
+    "title_pt": 66,
+    "meta_groups": [
+      [
+        "Frontend",
+        "Backend"
+      ],
+      [
+        "Fecha",
+        "Repositorios"
+      ]
+    ],
+    "meta_sizes": [
+      13,
+      11
+    ]
+  },
+  "toc": {
+    "depth": "1-2"
+  },
+  "ignore_classes": [],
+  "expect": {
+    "images": [
+      "example-diagram.png",
+      "example-screen.png"
+    ],
+    "figures": 2,
+    "data_tables": 1,
+    "h1": 2,
+    "h2": 3,
+    "code_blocks": 1,
+    "cover_strings": [
+      "Acme",
+      "Frontend: Android · Kotlin + Jetpack Compose (Material 3)",
+      "Backend: Rust · Axum 0.8 + SQLx · PostgreSQL"
+    ]
+  }
+}

@@ -50,7 +50,42 @@
             hash = "sha256-iTDTm40rRjE/7bSpsJGfNyrjo1m4tjRLD74e7j8FDK0=";
           };
 
-          # 3. Declarative Python Derivations: scrapling + rivalsearchmcp
+          # 3. Declarative Python Derivations: docxtpl, docxcompose, scrapling + rivalsearchmcp
+          docxcompose = py.buildPythonPackage {
+            pname = "docxcompose";
+            version = "2.2.0";
+            format = "wheel";
+            src = pkgs.fetchurl {
+              url = "https://files.pythonhosted.org/packages/e4/70/121090145cb543e48da7421e64036e6484bfbbc40fc619d73599dc22eb2e/docxcompose-2.2.0-py3-none-any.whl";
+              sha256 = "fcfec8b0ba7d341bd3280cb92b571ed2f9e868bbd0d6750ea9539e0ab0bb49a1";
+            };
+            dontCheckRuntimeDeps = true;
+            propagatedBuildInputs = with py; [
+              babel
+              lxml
+              python-docx
+            ];
+            doCheck = false;
+          };
+
+          docxtpl = py.buildPythonPackage {
+            pname = "docxtpl";
+            version = "0.20.2";
+            format = "wheel";
+            src = pkgs.fetchurl {
+              url = "https://files.pythonhosted.org/packages/a4/ad/e07939d8e020e513d3860400413ba1e0e06102c469639b440d921337efef/docxtpl-0.20.2-py3-none-any.whl";
+              sha256 = "626d5c570a46a62b2ca73b4d08f1c240fa031a5bc45371e1466a4fe184923d10";
+            };
+            dontCheckRuntimeDeps = true;
+            propagatedBuildInputs = with py; [
+              python-docx
+              jinja2
+              lxml
+              docxcompose
+            ];
+            doCheck = false;
+          };
+
           scrapling = py.buildPythonPackage {
             pname = "scrapling";
             version = "0.5";
@@ -138,6 +173,11 @@
             ps.markitdown
             ps.python-pptx
             ps.python-docx
+            ps.beautifulsoup4
+            ps.pymupdf
+            ps.jinja2
+            docxcompose
+            docxtpl
 
             # Deep Research & MCP Dependencies
             scrapling
@@ -177,6 +217,9 @@
             installPhase = ''
               mkdir -p $out
               cp -r $src/node_modules $out/node_modules
+              chmod -R u+w $out/node_modules
+              ln -s ${pkgs.playwright-driver} $out/node_modules/playwright-core
+              ln -s ${pkgs.playwright-driver} $out/node_modules/playwright
             '';
           };
 
@@ -322,8 +365,8 @@
 
             echo "=== [2/5] Verifying Python Libraries ==="
             python3 -c "
-            import openpyxl, pandas, numpy, defusedxml, lxml.etree, PIL, pypdf, pdfplumber, reportlab, pdf2image, pytesseract, pypdfium2, markitdown, pptx, docx, fastmcp, mcp, scrapling, rival_search_mcp.server
-            print('  [OK] All Python libraries & RivalSearchMCP server imported cleanly.')
+            import openpyxl, pandas, numpy, defusedxml, lxml.etree, PIL, pypdf, pdfplumber, reportlab, pdf2image, pytesseract, pypdfium2, markitdown, pptx, docx, docxtpl, docxcompose, bs4, pymupdf, jinja2, fastmcp, mcp, scrapling, rival_search_mcp.server
+            print('  [OK] All Python libraries (including docxtpl, docxcompose, bs4, pymupdf) & RivalSearchMCP server imported cleanly.')
             "
 
             echo "=== [3/5] Verifying Node.js Modules (NODE_PATH) ==="
@@ -335,10 +378,11 @@
               const ReactDOMServer = require('react-dom/server');
               const fa = require('react-icons/fa');
               const sharp = require('sharp');
-              if (!docx.Document || !pptxgen || !pdflib.PDFDocument || !ReactDOMServer.renderToStaticMarkup || !fa.FaCheck || !sharp) {
+              const playwright = require('playwright');
+              if (!docx.Document || !pptxgen || !pdflib.PDFDocument || !ReactDOMServer.renderToStaticMarkup || !fa.FaCheck || !sharp || !playwright.chromium) {
                 throw new Error('Missing expected exports');
               }
-              console.log('  [OK] All Node.js modules (docx, pptxgenjs, pdf-lib, react, react-icons, sharp) loaded cleanly.');
+              console.log('  [OK] All Node.js modules (docx, pptxgenjs, pdf-lib, react, react-icons, sharp, playwright) loaded cleanly.');
             "
 
             echo "=== [4/5] Verifying Research Scratchpad Engine ==="

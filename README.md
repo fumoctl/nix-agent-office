@@ -80,6 +80,8 @@ Or execute any single command inside the declarative environment from outside `n
     │   └── research-office-suite/                 # Bundled plugin with mcp_config.json & rules
     └── skills/
         ├── docx/                                  # Official Anthropic Word (.docx) skill + XSD validator
+        ├── building-technical-docx-reports/       # HTML -> Styled Technical Report .docx pipeline + real TOC page numbering
+        ├── docx-expert/                           # python-docx & docxtpl Jinja2 template workflow + generators
         ├── pptx/                                  # Official Anthropic PowerPoint (.pptx) skill + OOXML validator
         ├── xlsx/                                  # Official Anthropic Excel (.xlsx) skill + LibreOffice recalc.py
         ├── pdf/                                   # Official Anthropic PDF skill + form/table utilities
