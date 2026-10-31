@@ -71,7 +71,10 @@ function pageFor(file) {
 }
 
 (async () => {
-  const browser = await chromium.launch();
+  const browser = await chromium.launch({
+    executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || (fs.existsSync('/usr/bin/google-chrome') ? '/usr/bin/google-chrome' : undefined),
+    args: ['--no-sandbox']
+  });
   for (const file of inputs) {
     const { url, tmp } = pageFor(file);
     const page = await browser.newPage({ deviceScaleFactor: SCALE, viewport: { width: WIDTH, height: HEIGHT } });
